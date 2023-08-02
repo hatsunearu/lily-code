@@ -89,7 +89,7 @@ PROJECT = lily-ch
 MCU  = cortex-m0
 
 # Imported source files and paths.
-CHIBIOS  := ../ChibiOS
+CHIBIOS  := ./chibios
 CONFDIR  := ./cfg
 BUILDDIR := ./build
 DEPDIR   := ./.dep
@@ -101,7 +101,7 @@ include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32l0xx.m
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32L0xx/platform.mk
-include $(CHIBIOS)/os/hal/boards/test/board.mk
+include cfg/board.mk
 include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/nil/nil.mk
