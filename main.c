@@ -17,6 +17,8 @@
 #include "hal.h"
 #include "ch.h"
 
+#define GPIOB_EN_RLY1 0
+
 /*
  * Thread 1.
  */
