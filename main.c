@@ -22,10 +22,11 @@
 /*
  * Thread 1.
  */
-THD_WORKING_AREA(waThread1, 64);
+THD_WORKING_AREA(waThread1, 256);
 THD_FUNCTION(Thread1, arg) {
 
   (void)arg;
+  chRegSetThreadName("blinker");
 
   while (true) {
     palSetPad(GPIOB, GPIOB_EN_RLY1);
@@ -50,13 +51,7 @@ THD_FUNCTION(Thread1, arg) {
 // }
 
 
-/*
- * Threads creation table, one entry per thread.
- */
-THD_TABLE_BEGIN
-  THD_TABLE_THREAD(0, "blinker", waThread1, Thread1, NULL)
-//  THD_TABLE_THREAD(1, "hello",   waThread2, Thread2, NULL)
-THD_TABLE_END
+
 
 /*
  * Application entry point.
@@ -72,6 +67,8 @@ int main(void) {
    */
   halInit();
   chSysInit();
+
+  chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
 
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that

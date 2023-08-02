@@ -104,7 +104,7 @@ include $(CHIBIOS)/os/hal/ports/STM32/STM32L0xx/platform.mk
 include cfg/board.mk
 include $(CHIBIOS)/os/hal/osal/rt-nil/osal.mk
 # RTOS files (optional).
-include $(CHIBIOS)/os/nil/nil.mk
+include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/ARMv6-M/compilers/GCC/mk/port.mk
 # Auto-build files in ./source recursively.
 include $(CHIBIOS)/tools/mk/autobuild.mk
