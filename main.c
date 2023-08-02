@@ -26,7 +26,7 @@ THD_FUNCTION(Thread1, arg) {
   (void)arg;
 
   while (true) {
-    palSetPad(GPIOB, GPIOB_EN_RLY1);
+    palTogglePad(GPIOB, GPIOB_EN_RLY1);
     chThdSleepMilliseconds(1000);
   }
 }
