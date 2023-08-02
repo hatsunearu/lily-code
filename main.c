@@ -17,7 +17,7 @@
 #include "hal.h"
 #include "ch.h"
 
-#define GPIOB_EN_RLY1 0
+#define GPIOB_EN_RLY1 0U
 
 /*
  * Thread 1.
@@ -28,7 +28,7 @@ THD_FUNCTION(Thread1, arg) {
   (void)arg;
 
   while (true) {
-    palTogglePad(GPIOB, GPIOB_EN_RLY1);
+    palSetPad(GPIOB, GPIOB_EN_RLY1);
     chThdSleepMilliseconds(1000);
   }
 }
