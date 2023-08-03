@@ -17,38 +17,47 @@
 #include "hal.h"
 #include "ch.h"
 
-#define GPIOB_EN_RLY1 0U
-
 /*
  * Thread 1.
  */
-THD_WORKING_AREA(waThread1, 256);
+THD_WORKING_AREA(waThread1, 128);
 THD_FUNCTION(Thread1, arg) {
 
   (void)arg;
   chRegSetThreadName("blinker");
 
   while (true) {
-    palSetPad(GPIOB, GPIOB_EN_RLY1);
+    // palSetPad(GPIOB, GPIOB_EN_RLY1);
+    // chThdSleepMilliseconds(100);
+    // palSetPad(GPIOB, GPIOB_EN_RLY2);
+    // chThdSleepMilliseconds(100); 
+    // palSetPad(GPIOB, GPIOB_EN_RLY3);
+    // chThdSleepMilliseconds(100);
+    // palSetPad(GPIOB, GPIOB_EN_RLY4);
+    // chThdSleepMilliseconds(100);
+
+    // palClearPad(GPIOB, GPIOB_EN_RLY1);
+    // palClearPad(GPIOB, GPIOB_EN_RLY2);
+    // palClearPad(GPIOB, GPIOB_EN_RLY3);
+    // palClearPad(GPIOB, GPIOB_EN_RLY4);
     chThdSleepMilliseconds(1000);
   }
 }
 
-// /*
-//  * Thread 2.
-//  */
-// THD_WORKING_AREA(waThread2, 64);
-// THD_FUNCTION(Thread2, arg) {
+/*
+ * Thread 2.
+ */
+THD_WORKING_AREA(waThread2, 64);
+THD_FUNCTION(Thread2, arg) {
 
-//   (void)arg;
+  (void)arg;
+  chRegSetThreadName("serial");
 
-//   while (true) {
-//     palSetPad(GPIOB, GPIOB_EN_RLY2);
-//     chThdSleepMilliseconds(500);
-//     palClearPad(GPIOB, GPIOB_EN_RLY2);
-//     chThdSleepMilliseconds(500);
-//   }
-// }
+  while (true) {
+    chnWrite(&SD2, (const uint8_t *)"Hello World!\r\n", 14);
+    chThdSleepMilliseconds(2000);
+  }
+}
 
 
 
@@ -68,12 +77,16 @@ int main(void) {
   halInit();
   chSysInit();
 
-  chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
+  sdStart(&SD2, NULL);
 
-  /* This is now the idle thread loop, you may perform here a low priority
-     task but you must never try to sleep or wait in this loop. Note that
-     this tasks runs at the lowest priority level so any instruction added
-     here will be executed after all other tasks have been started.*/
+  chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
+  chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO, Thread2, NULL);
+
+
   while (true) {
+    palSetPad(GPIOB, GPIOB_LED_YELLOW);
+    chThdSleepMilliseconds(10);
+    palClearPad(GPIOB, GPIOB_LED_YELLOW);
+    chThdSleepMilliseconds(990);
   }
 }
