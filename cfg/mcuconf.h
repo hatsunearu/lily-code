@@ -51,7 +51,7 @@
 #define STM32_PLLSRC                        STM32_PLLSRC_HSI16
 #define STM32_PLLMUL_VALUE                  4
 #define STM32_PLLDIV_VALUE                  4
-#define STM32_HPRE                          STM32_HPRE_DIV16
+#define STM32_HPRE                          STM32_HPRE_DIV8
 #define STM32_PPRE1                         STM32_PPRE1_DIV1
 #define STM32_PPRE2                         STM32_PPRE2_DIV1
 #define STM32_MCOSEL                        STM32_MCOSEL_NOCLOCK
@@ -88,7 +88,7 @@
 #define STM32_ADC_ADC1_DMA_PRIORITY         2
 #define STM32_ADC_ADC1_DMA_IRQ_PRIORITY     2
 #define STM32_ADC_ADC1_DMA_STREAM           STM32_DMA_STREAM_ID(1, 1)
-#define STM32_ADC_PRESCALER_VALUE           1
+#define STM32_ADC_PRESCALER_VALUE           8
 
 /*
  * GPT driver system settings.

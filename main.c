@@ -21,28 +21,28 @@
 #define ADC_GRP_VSENSE_NUM_CHANNELS 1
 
 
-// uint8_t int_to_str(uint32_t, char *);
+uint8_t int_to_str(uint32_t, char *);
 
-// // sample channel 0 only for sensing vsense
-// static const ADCConversionGroup adc_grp_vsense = {
-//   FALSE,
-//   ADC_GRP_VSENSE_NUM_CHANNELS,
-//   NULL,
-//   NULL, // adcerrorcallback,
-//   // CFGR1
-//   ADC_CFGR1_RES_12BIT | ADC_CFGR1_CONT,
-//   // TR
-//   ADC_TR(0,0),
-//   // SMPR
-//   ADC_SMPR_SMP_1P5,
-//   // CHSELR
-//   ADC_CHSELR_CHSEL0
-// };
+// sample channel 0 only for sensing vsense
+static const ADCConversionGroup adc_grp_vsense = {
+  FALSE,
+  ADC_GRP_VSENSE_NUM_CHANNELS,
+  NULL,
+  NULL, // adcerrorcallback,
+  // CFGR1
+  ADC_CFGR1_RES_12BIT | ADC_CFGR1_CONT,
+  // TR
+  ADC_TR(0,0),
+  // SMPR
+  ADC_SMPR_SMP_1P5,
+  // CHSELR
+  ADC_CHSELR_CHSEL0
+};
 
 
-// // buffers
-// static adcsample_t adc_samples[5];
-// char buf[16] = {0};
+// buffers
+static adcsample_t adc_samples[5];
+char buf[16] = {0};
 
 
 
@@ -68,57 +68,58 @@
 // /*
 //  * Thread 2.
 //  */
-// THD_WORKING_AREA(waThread2, 64);
-// THD_FUNCTION(Thread2, arg) {
+THD_WORKING_AREA(waThread2, 64);
+THD_FUNCTION(Thread2, arg) {
 
-//   (void)arg;
-//   chRegSetThreadName("serial");
+  (void)arg;
+  chRegSetThreadName("serial");
 
-//   while (true) {
-//     palSetPad(GPIOA, GPIOA_EN_VDIV);
-//     palSetPad(GPIOB, GPIOB_LED_ORANGE);
-//     chThdSleepMilliseconds(10);
-//     adcStart(&ADCD1, NULL);
-//     adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
-//     palClearPad(GPIOA, GPIOA_EN_VDIV);
-//     palClearPad(GPIOB, GPIOB_LED_ORANGE);
-//     adcStop(&ADCD1);
+  while (true) {
+    palSetPad(GPIOA, GPIOA_EN_VDIV);
+    palSetPad(GPIOB, GPIOB_LED_ORANGE);
+    chThdSleepMilliseconds(10);
+    adcStart(&ADCD1, NULL);
+    adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
+    palClearPad(GPIOA, GPIOA_EN_VDIV);
+    palClearPad(GPIOB, GPIOB_LED_ORANGE);
+    adcStop(&ADCD1);
 
-//     uint8_t len = int_to_str((uint32_t)(adc_samples[0] * 3330 / 0xFFF), buf);
-// 	  // buf[len] = '\r';
-//     // buf[len+1] = '\n';
-//     // buf[len+2] = '\0';
-//     strcat(buf, "\r\n");
+    adc_samples[0] = 0x7FF;
+    uint8_t len = int_to_str((uint32_t)(adc_samples[0] * 3330 / 0xFFF), buf);
+	  // buf[len] = '\r';
+    // buf[len+1] = '\n';
+    // buf[len+2] = '\0';
+    strcat(buf, "\r\n");
 
-//     chnWrite(&SD2, (uint8_t *)buf, 16);
-//     chThdSleepMilliseconds(1000);
-//   }
-// }
+    chnWrite(&SD2, (uint8_t *)buf, 16);
+    chThdSleepMilliseconds(1000);
+  }
+}
 
-// uint8_t int_to_str(uint32_t result, char *str) {
+uint8_t int_to_str(uint32_t result, char *str) {
 
-// 	  uint8_t buf_ind = 0;
-// 	  uint8_t digit = 0;
-// 	  do {
-// 		  digit = result % 10;
-// 		  result /= 10;
+	  uint8_t buf_ind = 0;
+	  uint8_t digit = 0;
+	  do {
+		  digit = result % 10;
+		  result /= 10;
 
-// 		  str[buf_ind] = digit + '0';
-// 		  buf_ind++;
-// 	  } while (result > 0);
-// 	  str[buf_ind] = 0;
+		  str[buf_ind] = digit + '0';
+		  buf_ind++;
+	  } while (result > 0);
+	  str[buf_ind] = 0;
 
-// 	  // reverse string
-// 	  uint8_t temp;
-// 	  for (int i=0; i<(buf_ind+1)/2; i++) {
-// 		  temp = str[i];
-// 		  str[i] = str[buf_ind-1-i];
-// 		  str[buf_ind-1-i] = temp;
-// 	  }
+	  // reverse string
+	  uint8_t temp;
+	  for (int i=0; i<(buf_ind+1)/2; i++) {
+		  temp = str[i];
+		  str[i] = str[buf_ind-1-i];
+		  str[buf_ind-1-i] = temp;
+	  }
 
-//     return buf_ind;
+    return buf_ind;
 
-// }
+}
 
 
 
@@ -138,17 +139,17 @@ int main(void) {
   halInit();
   chSysInit();
 
-  //sdStart(&SD2, NULL);
+  sdStart(&SD2, NULL);
   //adcStart(&ADCD1, NULL);
 
   //chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
-  //chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO, Thread2, NULL);
+  chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO, Thread2, NULL);
 
 
   while (true) {
     palSetPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(1);
+    chThdSleepMilliseconds(10);
     palClearPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(999);
+    chThdSleepMilliseconds(990);
   }
 }

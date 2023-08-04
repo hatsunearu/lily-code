@@ -239,11 +239,11 @@
  * PA8  - EN_VDIV                   (output pushpull medium).
  * PA9  - VCP_TX                    (alternate 4).
  * PA10 - VCP_RX                    (alternate 4).
- * PA11 - PIN11                     (input pullup).
- * PA12 - PIN12                     (input pullup).
+ * PA11 - PIN11                     (input pulldown).
+ * PA12 - PIN12                     (input pulldown).
  * PA13 - SWDIO                     (alternate 0).
  * PA14 - SWCLK                     (alternate 0).
- * PA15 - PIN15                     (input pullup).
+ * PA15 - PIN15                     (input pulldown).
  */
 #define VAL_GPIOA_MODER             (PIN_MODE_ANALOG(GPIOA_ADC_VSENS) |     \
                                      PIN_MODE_ANALOG(GPIOA_ADC_ISNS1) |     \
@@ -300,15 +300,15 @@
                                      PIN_PUPDR_FLOATING(GPIOA_UART_TX) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_ADC_ISNS3) |  \
                                      PIN_PUPDR_FLOATING(GPIOA_ADC_ISNS4) |  \
-                                     PIN_PUPDR_PULLDOWN(GPIOA_EN_4V5_REG) | \
-                                     PIN_PUPDR_PULLDOWN(GPIOA_EN_VDIV) |    \
+                                     PIN_PUPDR_FLOATING(GPIOA_EN_4V5_REG) | \
+                                     PIN_PUPDR_FLOATING(GPIOA_EN_VDIV) |    \
                                      PIN_PUPDR_FLOATING(GPIOA_VCP_TX) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_VCP_RX) |       \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN11) |        \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN12) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN11) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN12) |      \
                                      PIN_PUPDR_PULLUP(GPIOA_SWDIO) |        \
                                      PIN_PUPDR_PULLDOWN(GPIOA_SWCLK) |      \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN15))
+                                     PIN_PUPDR_PULLDOWN(GPIOA_PIN15))
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_ADC_VSENS) |        \
                                      PIN_ODR_HIGH(GPIOA_ADC_ISNS1) |        \
                                      PIN_ODR_HIGH(GPIOA_ADC_ISNS2) |        \
@@ -347,20 +347,20 @@
  *
  * PB0  - EN_RLY1                   (output pushpull medium).
  * PB1  - EN_RLY2                   (output pushpull medium).
- * PB2  - PIN2                      (input pullup).
+ * PB2  - PIN2                      (input pulldown).
  * PB3  - EN_RLY3                   (output pushpull medium).
  * PB4  - EN_RLY4                   (output pushpull medium).
  * PB5  - FAULT                     (output pushpull medium).
  * PB6  - LED_ORANGE                (output pushpull medium).
  * PB7  - LED_YELLOW                (output pushpull medium).
- * PB8  - PIN8                      (input pullup).
- * PB9  - PIN9                      (input pullup).
- * PB10 - PIN10                     (input pullup).
- * PB11 - PIN11                     (input pullup).
- * PB12 - PIN12                     (input pullup).
- * PB13 - PIN13                     (input pullup).
- * PB14 - PIN14                     (input pullup).
- * PB15 - PIN15                     (input pullup).
+ * PB8  - PIN8                      (input pulldown).
+ * PB9  - PIN9                      (input pulldown).
+ * PB10 - PIN10                     (input pulldown).
+ * PB11 - PIN11                     (input pulldown).
+ * PB12 - PIN12                     (input pulldown).
+ * PB13 - PIN13                     (input pulldown).
+ * PB14 - PIN14                     (input pulldown).
+ * PB15 - PIN15                     (input pulldown).
  */
 #define VAL_GPIOB_MODER             (PIN_MODE_OUTPUT(GPIOB_EN_RLY1) |       \
                                      PIN_MODE_OUTPUT(GPIOB_EN_RLY2) |       \
@@ -412,20 +412,20 @@
                                      PIN_OSPEED_HIGH(GPIOB_PIN15))
 #define VAL_GPIOB_PUPDR             (PIN_PUPDR_FLOATING(GPIOB_EN_RLY1) |    \
                                      PIN_PUPDR_FLOATING(GPIOB_EN_RLY2) |    \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN2) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN2) |       \
                                      PIN_PUPDR_FLOATING(GPIOB_EN_RLY3) |    \
                                      PIN_PUPDR_FLOATING(GPIOB_EN_RLY4) |    \
                                      PIN_PUPDR_FLOATING(GPIOB_FAULT) |      \
                                      PIN_PUPDR_FLOATING(GPIOB_LED_ORANGE) | \
                                      PIN_PUPDR_FLOATING(GPIOB_LED_YELLOW) | \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN8) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN9) |         \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN10) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN11) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN12) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN13) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN14) |        \
-                                     PIN_PUPDR_PULLUP(GPIOB_PIN15))
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN8) |       \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN9) |       \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN10) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN11) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN12) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN13) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN14) |      \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN15))
 #define VAL_GPIOB_ODR               (PIN_ODR_LOW(GPIOB_EN_RLY1) |           \
                                      PIN_ODR_LOW(GPIOB_EN_RLY2) |           \
                                      PIN_ODR_HIGH(GPIOB_PIN2) |             \
