@@ -835,6 +835,9 @@
 /* Port-specific settings (override port settings defaulted in chcore.h).    */
 /*===========================================================================*/
 
+// Enable WFI in the idle thread to save power
+#define CORTEX_ENABLE_WFI_IDLE TRUE
+
 #endif  /* CHCONF_H */
 
 /** @} */
