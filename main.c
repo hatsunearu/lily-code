@@ -14,33 +14,12 @@
     limitations under the License.
 */
 
-#include "hal.h"
-#include "ch.h"
-
-#define ADC_GRP_VSENSE_NUM_CHANNELS 1
+#include "main.h"
 
 
-uint8_t int_to_str(uint32_t, char *);
-
-// sample channel 0 only for sensing vsense
-static const ADCConversionGroup adc_grp_vsense = {
-  FALSE,
-  ADC_GRP_VSENSE_NUM_CHANNELS,
-  NULL,
-  NULL, // adcerrorcallback,
-  // CFGR1
-  ADC_CFGR1_RES_12BIT | ADC_CFGR1_CONT,
-  // TR
-  ADC_TR(0,0),
-  // SMPR
-  ADC_SMPR_SMP_1P5,
-  // CHSELR
-  ADC_CHSELR_CHSEL0
-};
 
 
 // buffers
-static adcsample_t adc_samples[5];
 char buf[16] = {0};
 
 
@@ -62,37 +41,60 @@ char buf[16] = {0};
 // }
 
 
+// sample channel 0 only for sensing vsense
+// static const ADCConversionGroup adc_grp_vsense = {
+//   FALSE,
+//   ADC_GRP_VSENSE_NUM_CHANNELS,
+//   NULL,
+//   NULL, // adcerrorcallback,
+//   // CFGR1
+//   ADC_CFGR1_RES_12BIT | ADC_CFGR1_CONT,
+//   // TR
+//   ADC_TR(0,0),
+//   // SMPR
+//   ADC_SMPR_SMP_1P5,
+//   // CHSELR
+//   ADC_CHSELR_CHSEL0
+// };
+
+
+// void adc_convert_vsense() {
+
+//   palSetPad(GPIOA, GPIOA_EN_VDIV);
+//   chThdSleepMilliseconds(10);
+//   adcStart(&ADCD1, NULL);
+//   adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
+//   palClearPad(GPIOA, GPIOA_EN_VDIV);
+//   adcStop(&ADCD1);    
+// }
+
 
 
 // /*
 //  * Thread 2.
 //  */
-THD_WORKING_AREA(waThread2, 64);
+THD_WORKING_AREA(waThread2, 128);
 THD_FUNCTION(Thread2, arg) {
 
   (void)arg;
   chRegSetThreadName("serial");
 
   while (true) {
-
-    palSetPad(GPIOA, GPIOA_EN_VDIV);
     palSetPad(GPIOB, GPIOB_LED_ORANGE);
-    sdStart(&SD2, NULL);
-    chThdSleepMilliseconds(10);
-    adcStart(&ADCD1, NULL);
-    adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
-    palClearPad(GPIOA, GPIOA_EN_VDIV);
-    palClearPad(GPIOB, GPIOB_LED_ORANGE);
-    adcStop(&ADCD1);
+
+    adc_convert_vsense();
 
     uint8_t len = int_to_str((uint32_t)(adc_samples[0] * 3330 / 0xFFF), buf);
 	  buf[len] = '\r';
     buf[len+1] = '\n';
     buf[len+2] = '\0';
 
-    chnWrite(&SD2, (uint8_t *)buf, 16);
+    sdStart(&SD2, NULL);
+    chThdSleepMilliseconds(10);
+    chnWrite(&SD2, (uint8_t *)buf, len+2);
     chThdSleepMilliseconds(10);
     sdStop(&SD2);
+    palClearPad(GPIOB, GPIOB_LED_ORANGE);
     chThdSleepMilliseconds(1000);
   }
 }
@@ -101,7 +103,7 @@ uint8_t int_to_str(uint32_t result, char *str) {
 
 	  uint8_t buf_ind = 0;
 	  uint8_t digit = 0;
-	  do {
+	  do { sdStart(&LPSD1, NULL);
 		  digit = result % 10;
 		  result /= 10;
 
@@ -122,8 +124,30 @@ uint8_t int_to_str(uint32_t result, char *str) {
 
 }
 
+RTCDateTime inittime;
+RTCAlarm alarmspec;
 
+void enter_stop() {
+  // initialize time
+  inittime.year = 0;
+  inittime.month = 1;
+  inittime.dstflag = 0;
+  inittime.month = 1;
+  inittime.day = 1;
+  inittime.millisecond = 0;
 
+  alarmspec.alrmr = RTC_ALRM_MSK4 | RTC_ALRM_MSK3 | RTC_ALRM_MSK2 
+  | RTC_ALRM_ST(STOP_TIME_TENS) | RTC_ALRM_SU(STOP_TIME_ONES);
+
+  rtcSetTime(&RTCD1, &inittime);
+  rtcSetAlarm(&RTCD1, 0, &alarmspec);
+
+  chSysLock();
+  PWR->CR |= PWR_CR_CWUF | PWR_CR_CSBF;
+  PWR->CR |= PWR_CR_PDDS | PWR_CR_LPDS;
+  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  __WFI();
+}
 
 /*
  * Application entry point.
@@ -141,6 +165,8 @@ int main(void) {
   chSysInit();
 
   sdStart(&SD2, NULL);
+  sdStart(&LPSD1, NULL);
+
   //adcStart(&ADCD1, NULL);
 
   //chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
@@ -148,6 +174,12 @@ int main(void) {
 
 
   while (true) {
-    chThdSleepMilliseconds(10000);
+    
+    palSetPad(GPIOB, GPIOB_LED_YELLOW);
+    chThdSleepMilliseconds(1000);
+    palClearPad(GPIOB, GPIOB_LED_YELLOW);
+    chThdSleepMilliseconds(1000);
+
+    //enter_stop();
   }
 }

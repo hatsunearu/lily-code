@@ -120,6 +120,7 @@ LDSCRIPT= $(STARTUPLD)/STM32L011x4.ld
 # setting.
 CSRC = $(ALLCSRC) \
        $(TESTSRC) \
+       lilyadc.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

@@ -46,12 +46,12 @@
 #define STM32_HSE_ENABLED                   FALSE
 #define STM32_LSE_ENABLED                   FALSE
 #define STM32_ADC_CLOCK_ENABLED             TRUE
-#define STM32_MSIRANGE                      STM32_MSIRANGE_4M
+#define STM32_MSIRANGE                      STM32_MSIRANGE_1M
 #define STM32_SW                            STM32_SW_MSI
 #define STM32_PLLSRC                        STM32_PLLSRC_HSI16
 #define STM32_PLLMUL_VALUE                  3
 #define STM32_PLLDIV_VALUE                  4
-#define STM32_HPRE                          STM32_HPRE_DIV4
+#define STM32_HPRE                          STM32_HPRE_DIV1
 #define STM32_PPRE1                         STM32_PPRE1_DIV1
 #define STM32_PPRE2                         STM32_PPRE2_DIV1
 #define STM32_MCOSEL                        STM32_MCOSEL_NOCLOCK

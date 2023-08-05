@@ -16,7 +16,10 @@
             "runToEntryPoint": "main",
             "servertype": "openocd",
             "configFiles": ["interface/stlink.cfg", "target/stm32l0.cfg"],
-            "rtos": "auto"
+            "rtos": "auto",
+            "gdbpath" : "gdb-multiarch",
+            "objdumpPath": "objdump",
+            "nmPath": "nm"
         }
     ]
 }
