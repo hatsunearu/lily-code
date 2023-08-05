@@ -57,7 +57,7 @@ THD_FUNCTION(Thread2, arg) {
 
     uint32_t vsense = adc_convert_vsense();
 
-    uint8_t len = int_to_str((uint32_t)(vsense * 3330 / 0xFFF), buf);
+    uint8_t len = int_to_str((uint32_t)(vsense), buf);
 	  buf[len] = '\r';
     buf[len+1] = '\n';
     buf[len+2] = '\0';
