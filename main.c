@@ -16,7 +16,6 @@
 
 #include "hal.h"
 #include "ch.h"
-#include <string.h>
 
 #define ADC_GRP_VSENSE_NUM_CHANNELS 1
 
@@ -75,8 +74,10 @@ THD_FUNCTION(Thread2, arg) {
   chRegSetThreadName("serial");
 
   while (true) {
+
     palSetPad(GPIOA, GPIOA_EN_VDIV);
     palSetPad(GPIOB, GPIOB_LED_ORANGE);
+    sdStart(&SD2, NULL);
     chThdSleepMilliseconds(10);
     adcStart(&ADCD1, NULL);
     adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
@@ -84,14 +85,14 @@ THD_FUNCTION(Thread2, arg) {
     palClearPad(GPIOB, GPIOB_LED_ORANGE);
     adcStop(&ADCD1);
 
-    adc_samples[0] = 0x7FF;
     uint8_t len = int_to_str((uint32_t)(adc_samples[0] * 3330 / 0xFFF), buf);
-	  // buf[len] = '\r';
-    // buf[len+1] = '\n';
-    // buf[len+2] = '\0';
-    strcat(buf, "\r\n");
+	  buf[len] = '\r';
+    buf[len+1] = '\n';
+    buf[len+2] = '\0';
 
     chnWrite(&SD2, (uint8_t *)buf, 16);
+    chThdSleepMilliseconds(10);
+    sdStop(&SD2);
     chThdSleepMilliseconds(1000);
   }
 }
@@ -147,9 +148,6 @@ int main(void) {
 
 
   while (true) {
-    palSetPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(10);
-    palClearPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(990);
+    chThdSleepMilliseconds(10000);
   }
 }
