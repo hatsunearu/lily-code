@@ -6,8 +6,9 @@
 
 #define ADC_GRP_VSENSE_NUM_CHANNELS 1
 
-static adcsample_t adc_samples[4];
-//static const ADCConversionGroup adc_grp_vsense;
+#define VREFINT_CAL_VALUE (*(volatile uint16_t *)0x1FF80078)
+
+static const ADCConversionGroup adc_grp_vsense;
 
 // get vpp only
-// void adc_convert_vsense(void);
+uint32_t adc_convert_vsense(void);

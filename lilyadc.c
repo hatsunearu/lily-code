@@ -1,9 +1,11 @@
 #include "lilyadc.h"
 
+adcsample_t adc_samples[4];
+
 // // sample channel 0 only for sensing vsense
 static const ADCConversionGroup adc_grp_vsense = {
   FALSE,
-  ADC_GRP_VSENSE_NUM_CHANNELS,
+  2,
   NULL,
   NULL, // adcerrorcallback,
   // CFGR1
@@ -13,18 +15,19 @@ static const ADCConversionGroup adc_grp_vsense = {
   // SMPR
   ADC_SMPR_SMP_1P5,
   // CHSELR
-  ADC_CHSELR_CHSEL0
+  ADC_CHSELR_CHSEL0 | ADC_CHSELR_CHSEL17 
 };
 
 
-void adc_convert_vsense() {
-
+uint32_t adc_convert_vsense() {
     palSetPad(GPIOA, GPIOA_EN_VDIV);
-    palSetPad(GPIOB, GPIOB_LED_ORANGE);
     chThdSleepMilliseconds(10);
     adcStart(&ADCD1, NULL);
-    adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
+    adcSTM32EnableVREF(&ADCD1);
+    adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 2);
     palClearPad(GPIOA, GPIOA_EN_VDIV);
-    palClearPad(GPIOB, GPIOB_LED_ORANGE);
+    adcSTM32DisableVREF(&ADCD1);
     adcStop(&ADCD1);
+
+    return adc_samples[0]; // * adc_samples[1] / (VREFINT_CAL_VALUE * 11 / 10);
 }

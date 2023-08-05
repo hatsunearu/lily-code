@@ -2,7 +2,6 @@
 #include "ch.h"
 #include <hal_rtc.h>
 
-#include "lilyadc.h"
 
 #define STOP_TIME 10
 

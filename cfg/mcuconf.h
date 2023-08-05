@@ -88,7 +88,7 @@
 #define STM32_ADC_ADC1_DMA_PRIORITY         2
 #define STM32_ADC_ADC1_DMA_IRQ_PRIORITY     2
 #define STM32_ADC_ADC1_DMA_STREAM           STM32_DMA_STREAM_ID(1, 1)
-#define STM32_ADC_PRESCALER_VALUE           8
+#define STM32_ADC_PRESCALER_VALUE           16
 
 /*
  * GPT driver system settings.

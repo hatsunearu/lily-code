@@ -15,6 +15,7 @@
 */
 
 #include "main.h"
+#include "lilyadc.h"
 
 
 
@@ -41,34 +42,6 @@ char buf[16] = {0};
 // }
 
 
-// sample channel 0 only for sensing vsense
-// static const ADCConversionGroup adc_grp_vsense = {
-//   FALSE,
-//   ADC_GRP_VSENSE_NUM_CHANNELS,
-//   NULL,
-//   NULL, // adcerrorcallback,
-//   // CFGR1
-//   ADC_CFGR1_RES_12BIT | ADC_CFGR1_CONT,
-//   // TR
-//   ADC_TR(0,0),
-//   // SMPR
-//   ADC_SMPR_SMP_1P5,
-//   // CHSELR
-//   ADC_CHSELR_CHSEL0
-// };
-
-
-// void adc_convert_vsense() {
-
-//   palSetPad(GPIOA, GPIOA_EN_VDIV);
-//   chThdSleepMilliseconds(10);
-//   adcStart(&ADCD1, NULL);
-//   adcConvert(&ADCD1, &adc_grp_vsense, adc_samples, 1);
-//   palClearPad(GPIOA, GPIOA_EN_VDIV);
-//   adcStop(&ADCD1);    
-// }
-
-
 
 // /*
 //  * Thread 2.
@@ -82,12 +55,13 @@ THD_FUNCTION(Thread2, arg) {
   while (true) {
     palSetPad(GPIOB, GPIOB_LED_ORANGE);
 
-    adc_convert_vsense();
+    uint32_t vsense = adc_convert_vsense();
 
-    uint8_t len = int_to_str((uint32_t)(adc_samples[0] * 3330 / 0xFFF), buf);
+    uint8_t len = int_to_str((uint32_t)(vsense * 3330 / 0xFFF), buf);
 	  buf[len] = '\r';
     buf[len+1] = '\n';
     buf[len+2] = '\0';
+
 
     sdStart(&SD2, NULL);
     chThdSleepMilliseconds(10);
