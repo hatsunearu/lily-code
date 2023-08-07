@@ -73,9 +73,9 @@ int main(void) {
   #ifdef DEBUG
   palSetPad(GPIOB, GPIOB_LED_YELLOW);
   #endif
-  adc_convert_grp1();
-  uint32_t vsns = adc_grp1_vsns();
-  uint32_t vdda = adc_grp1_vdda();
+  auto adc1 = adc_convert_grp1();
+  uint32_t vsns = adc1.vsns;
+  uint32_t vdda = adc1.vdda;
 
 #ifdef VCP_SERIAL
   sdStart(&SD2, NULL);
@@ -129,9 +129,9 @@ int main(void) {
     #ifdef DEBUG
     palSetPad(GPIOB, GPIOB_LED_YELLOW);
     #endif    
-    adc_convert_grp1();
-    uint32_t vsns = adc_grp1_vsns();
-    uint32_t vdda = adc_grp1_vdda();
+    auto adc1 = adc_convert_grp1();
+    uint32_t vsns = adc1.vsns;
+    uint32_t vdda = adc1.vdda;
 
     // VDDA fault
     if (vdda <= VDDA_LOW_LIM - VDDA_HYST_LIM || vdda >= VDDA_HIGH_LIM + VDDA_HYST_LIM) {
