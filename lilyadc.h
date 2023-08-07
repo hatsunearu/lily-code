@@ -11,15 +11,13 @@
 // 0xFFFF * 1.61mV/ (C)
 #define TS_CNT_SLOPE 6593
 
+struct AdcGrp1Result {
+    uint32_t vsns;
+    uint32_t vdda;
+};
 
+AdcGrp1Result adc_convert_grp1();
 
-// get vpp only
-void adc_convert_grp1(void);
-
-uint32_t adc_grp1_vsns(void);
-
-uint32_t adc_grp1_vdda(void);
-
-void adc_convert_grp2(void);
+void adc_convert_grp2();
 
 uint32_t adc_grp2_ichan(int channel);

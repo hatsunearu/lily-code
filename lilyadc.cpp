@@ -1,7 +1,7 @@
 #include "lilyadc.h"
 
 adcsample_t adc_samples[4];
-uint32_t vdda = 3300;
+constexpr uint32_t vdda = 3300;
 
 // vsense and vref conversion
 static const ADCConversionGroup adc_grp_1 = {
@@ -35,27 +35,23 @@ static const ADCConversionGroup adc_grp_2 = {
 };
 
 
-void adc_convert_grp1() {
+AdcGrp1Result adc_convert_grp1() {
+  adcsample_t samples[2];
+
   palSetPad(GPIOA, GPIOA_EN_VDIV);
   chThdSleepMicroseconds(100);
-  adcStart(&ADCD1, NULL);
+  adcStart(&ADCD1, nullptr);
   chThdSleepMicroseconds(10);
   adcSTM32EnableVREF(&ADCD1);
-  adcConvert(&ADCD1, &adc_grp_1, adc_samples, 1);
+  adcConvert(&ADCD1, &adc_grp_1, samples, 1);
   palClearPad(GPIOA, GPIOA_EN_VDIV);
   adcSTM32DisableVREF(&ADCD1);
   adcStop(&ADCD1);
-#ifdef ADC_UPDATE_VDDA
-  vdda = adc_grp1_vdda();
-#endif
-}
 
-uint32_t adc_grp1_vsns() {
-  return adc_samples[0] * vdda / 0xFFF;
-}
-
-uint32_t adc_grp1_vdda() {
-  return VREFINT_CAL_VALUE * 3000 / adc_samples[1];
+  return {
+    .vsns = samples[0] * vdda / 0xFFF,
+    .vdda = VREFINT_CAL_VALUE * 3000 / samples[1]
+  };
 }
 
 // EN_4V5_REG must be enabled
