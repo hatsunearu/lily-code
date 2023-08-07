@@ -67,12 +67,47 @@ State is a bitmap with the following structure:
 
 #### Payload 
 
-No payload
+- `P0` - Channel number (0-3)
 
 #### Return payload
 
-- `P0` - Channel 1 current (mA)
-- `P1` - Channel 2 current (mA)
-- `P2` - Channel 2 current (mA)
-- `P3` - Channel 3 current (mA)
+- `P0` - Channel current (mA) (LSB)
+- `P1` - Channel current (mA) (MSB)
 
+### Write Channel State - `[0x4]`
+
+#### Payload
+
+- `P0` - Channel 1 state
+- `P1` - Channel 2 state
+- `P2` - Channel 2 state
+- `P3` - Channel 3 state
+
+State is a bitmap with the following structure:
+
+- `b7` (MSB): Reserved
+- `b6` : Reserved
+- `b5` : Reserved
+- `b4` : Reserved
+- `b3` : Reserved
+- `b2` : Reserved
+- `b1` : Reserved
+- `b0` : Channel on
+
+#### Return payload
+
+- `P0` - Channel 1 state
+- `P1` - Channel 2 state
+- `P2` - Channel 2 state
+- `P3` - Channel 3 state
+
+State is a bitmap with the following structure:
+
+- `b7` (MSB): Reserved
+- `b6` : Reserved
+- `b5` : Reserved
+- `b4` : Reserved
+- `b3` : Reserved
+- `b2` : Reserved
+- `b1` : Overcurrent tripped
+- `b0` : Channel on
