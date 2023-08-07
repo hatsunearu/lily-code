@@ -19,6 +19,10 @@
 #include "lilyutils.h"
 
 
+APIParseState apistate = Init;
+#define APIBUF_LEN 6
+uint8_t apibuf[APIBUF_LEN] = {0};
+
 // /*
 //  * Thread 2.
 //  */
@@ -29,27 +33,96 @@ THD_FUNCTION(Thread2, arg) {
   chRegSetThreadName("serial");
 
   while (true) {
-    // palSetPad(GPIOB, GPIOB_LED_ORANGE);
+    if (apistate == Init) {
+      palClearPad(GPIOB, GPIOB_LED_ORANGE);
+      for (int i=0; i<len; i++) {
+        apibuf[i] = 0;
+      }
+      chnRead(&SD2, apibuf, 1);
 
-    // adc_convert_grp1();
-    // //adc_convert_grp2();
-    // int32_t vsense = adc_grp1_vsns();
+      // sync byte found, transition
+      if (apibuf[0] == 0x39) {
+        apistate = Sync;
+      }
+    }
 
-    // uint8_t len = int_to_str((uint32_t)(vsense), buf);
-	  // buf[len] = '\r';
-    // buf[len+1] = '\n';
-    // buf[len+2] = '\0';
+    else if (apistate == Sync) {
+      palSetPad(GPIOB, GPIOB_LED_ORANGE);
+      chnRead(&SD2, apibuf+1, 1);
 
+      switch (apibuf[1]) {
+        case 0x01: // valid addresses
+        case 0x02:
+        case 0x03:
+        case 0x04:
+          apistate = Address;
+          break;
+        default:
+          apistate = Init;
+      }
+    }
 
-    // sdStart(&SD2, NULL);
-    // chThdSleepMilliseconds(10);
-    // //chnWrite(&SD2, (uint8_t *)buf, len+2);
-    // chThdSleepMilliseconds(10);
-    // sdStop(&SD2);
-    // palClearPad(GPIOB, GPIOB_LED_ORANGE);
-    chThdSleepMilliseconds(100);
+    else if (apistate == Address) {
+      palSetPad(GPIOB, GPIOB_LED_ORANGE);
+      switch (apibuf[1]) {
+        case 0x01: // payload + parity is 1
+        case 0x02:
+          chnRead(&SD2, apibuf+2, 1);
+          service_api(apibuf, APIBUF_LEN);
+          break;
+
+        case 0x03: // payload + parity is 2
+          chnRead(&SD2, apibuf+2, 2);
+          service_api(apibuf, APIBUF_LEN);
+          break;
+
+        case 0x04: // payload + parity is 5
+          chnRead(&SD2, apibuf+2, 5);
+          service_api(apibuf, APIBUF_LEN);
+          break;
+      }
+      apistate = Init;
+    }
+
   }
 }
+
+void service_api(uint8_t *b, int len) {
+
+  // invalid sync
+  if (b[0] != 0x39)
+    return;
+
+  uint8_t parity = 0;
+  for (int i=0; i<len; i++) {
+    parity ^= b[i];
+  }
+
+  // invalid payload
+  if (parity != 0)
+    return;
+
+  int outlen = 0;
+  if (apibuf[1] == 0x01) {
+    auto adc1 = adc_convert_grp1();
+    apibuf[2] = adc1.vsns & 0xFF;
+    apibuf[3] = (adc1.vsns >> 8) & 0xFF;
+    apibuf[4] = adc1.vdda & 0xFF;
+    apibuf[5] = (adc1.vdda >> 8) & 0xFF;
+    outlen = 6;
+  }
+  else {
+    return;
+  }
+  
+  parity = 0;
+  for (int i=0; i<outlen; i++) {
+    parity ^= apibuf[i];
+  }
+  apibuf[outlen] = parity;
+  chnWrite(&SD2, apibuf, outlen);
+}
+
 
 
 /*

@@ -16,6 +16,11 @@
 #define VSNS_FAULT_THRES 10
 
 
+enum APIParseState {
+    Init, // Initial State
+    Sync, // Sync received
+    Address // Address byte received
+};
 
 
 extern adcsample_t adc_samples[4];
@@ -24,3 +29,4 @@ extern uint8_t len;
 extern char buf[16];
 #endif
 
+void service_api(uint8_t *b, int len);
