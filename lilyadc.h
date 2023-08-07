@@ -16,8 +16,15 @@ struct AdcGrp1Result {
     uint32_t vdda;
 };
 
+struct AdcGrp2Result {
+    uint32_t ch1_i;
+    uint32_t ch2_i;
+    uint32_t ch3_i;
+    uint32_t ch4_i;
+};
+
 AdcGrp1Result adc_convert_grp1();
 
-void adc_convert_grp2();
+AdcGrp2Result adc_convert_grp2();
 
 uint32_t adc_grp2_ichan(int channel);

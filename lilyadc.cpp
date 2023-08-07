@@ -54,14 +54,16 @@ AdcGrp1Result adc_convert_grp1() {
   };
 }
 
-// EN_4V5_REG must be enabled
-void adc_convert_grp2() {
+AdcGrp2Result adc_convert_grp2() {
   adcStart(&ADCD1, NULL);
   chThdSleepMicroseconds(10);
   adcConvert(&ADCD1, &adc_grp_2, adc_samples, 1);
   adcStop(&ADCD1);
-}
 
-uint32_t adc_grp2_ichan(int channel) {
-  return vdda * adc_samples[channel] / 0x7FF;
+  return {
+    .ch1_i = vdda * adc_samples[0] / 0x7FF,
+    .ch2_i = vdda * adc_samples[1] / 0x7FF,
+    .ch3_i = vdda * adc_samples[2] / 0x7FF,
+    .ch4_i = vdda * adc_samples[3] / 0x7FF,
+  };
 }

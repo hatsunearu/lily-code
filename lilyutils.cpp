@@ -36,7 +36,7 @@ RTCAlarm alarmspec;
 
 void enter_stop() {
   #ifdef VCP_SERIAL
-  chThdSleepMilliseconds(100);
+  while (!oqIsEmptyI(&SD2.oqueue)) chThdSleepMilliseconds(1);
   sdStop(&SD2);
   #endif
 
