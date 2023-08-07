@@ -16,31 +16,7 @@
 
 #include "main.h"
 #include "lilyadc.h"
-
-
-
-
-// buffers
-char buf[16] = {0};
-
-
-
-// /*
-//  * Thread 1.
-//  */
-// THD_WORKING_AREA(waThread1, 128);
-// THD_FUNCTION(Thread1, arg) {
-
-//   (void)arg;
-//   chRegSetThreadName("blinker");
-
-//   while (true) {
-
-
-//     chThdSleepMilliseconds(1000);
-//   }
-// }
-
+#include "lilyutils.h"
 
 
 // /*
@@ -53,79 +29,34 @@ THD_FUNCTION(Thread2, arg) {
   chRegSetThreadName("serial");
 
   while (true) {
-    palSetPad(GPIOB, GPIOB_LED_ORANGE);
+    // palSetPad(GPIOB, GPIOB_LED_ORANGE);
 
-    uint32_t vsense = adc_convert_vsense();
+    // adc_convert_grp1();
+    // //adc_convert_grp2();
+    // int32_t vsense = adc_grp1_vsns();
 
-    uint8_t len = int_to_str((uint32_t)(vsense), buf);
-	  buf[len] = '\r';
-    buf[len+1] = '\n';
-    buf[len+2] = '\0';
+    // uint8_t len = int_to_str((uint32_t)(vsense), buf);
+	  // buf[len] = '\r';
+    // buf[len+1] = '\n';
+    // buf[len+2] = '\0';
 
 
-    sdStart(&SD2, NULL);
-    chThdSleepMilliseconds(10);
-    chnWrite(&SD2, (uint8_t *)buf, len+2);
-    chThdSleepMilliseconds(10);
-    sdStop(&SD2);
-    palClearPad(GPIOB, GPIOB_LED_ORANGE);
-    chThdSleepMilliseconds(1000);
+    // sdStart(&SD2, NULL);
+    // chThdSleepMilliseconds(10);
+    // //chnWrite(&SD2, (uint8_t *)buf, len+2);
+    // chThdSleepMilliseconds(10);
+    // sdStop(&SD2);
+    // palClearPad(GPIOB, GPIOB_LED_ORANGE);
+    chThdSleepMilliseconds(100);
   }
 }
 
-uint8_t int_to_str(uint32_t result, char *str) {
-
-	  uint8_t buf_ind = 0;
-	  uint8_t digit = 0;
-	  do { sdStart(&LPSD1, NULL);
-		  digit = result % 10;
-		  result /= 10;
-
-		  str[buf_ind] = digit + '0';
-		  buf_ind++;
-	  } while (result > 0);
-	  str[buf_ind] = 0;
-
-	  // reverse string
-	  uint8_t temp;
-	  for (int i=0; i<(buf_ind+1)/2; i++) {
-		  temp = str[i];
-		  str[i] = str[buf_ind-1-i];
-		  str[buf_ind-1-i] = temp;
-	  }
-
-    return buf_ind;
-
-}
-
-RTCDateTime inittime;
-RTCAlarm alarmspec;
-
-void enter_stop() {
-  // initialize time
-  inittime.year = 0;
-  inittime.month = 1;
-  inittime.dstflag = 0;
-  inittime.month = 1;
-  inittime.day = 1;
-  inittime.millisecond = 0;
-
-  alarmspec.alrmr = RTC_ALRM_MSK4 | RTC_ALRM_MSK3 | RTC_ALRM_MSK2 
-  | RTC_ALRM_ST(STOP_TIME_TENS) | RTC_ALRM_SU(STOP_TIME_ONES);
-
-  rtcSetTime(&RTCD1, &inittime);
-  rtcSetAlarm(&RTCD1, 0, &alarmspec);
-
-  chSysLock();
-  PWR->CR |= PWR_CR_CWUF | PWR_CR_CSBF;
-  PWR->CR |= PWR_CR_PDDS | PWR_CR_LPDS;
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-  __WFI();
-}
 
 /*
  * Application entry point.
  */
+
+
 int main(void) {
 
   /*
@@ -138,22 +69,102 @@ int main(void) {
   halInit();
   chSysInit();
 
+  // obtain VDDA and VSNS
+  #ifdef DEBUG
+  palSetPad(GPIOB, GPIOB_LED_YELLOW);
+  #endif
+  adc_convert_grp1();
+  uint32_t vsns = adc_grp1_vsns();
+  uint32_t vdda = adc_grp1_vdda();
+
+#ifdef VCP_SERIAL
   sdStart(&SD2, NULL);
+  chThdSleepMilliseconds(10);
+
+  VCP_PRINT("\r\nReset\r\n");
+  VCP_PRINT("Startup VDDA: ");
+
+  len = int_to_str((uint32_t)(vdda), buf);
+  chnWrite(&SD2, (uint8_t *)buf, len);
+  VCP_PRINT("mV\r\n");
+  
+  VCP_PRINT("Startup VSNS: ");
+
+  len = int_to_str((uint32_t)(vsns), buf);
+  chnWrite(&SD2, (uint8_t *)buf, len);
+  VCP_PRINT("mV\r\n");
+#endif
+
+
+  // startup gating condition
+  if (vdda <= VDDA_LOW_LIM || vdda >= VDDA_HIGH_LIM) {
+    enter_stop();
+  }
+  if (vsns <= VSNS_LOW_LIM || vsns >= VSNS_HIGH_LIM) {
+    enter_stop();
+  }
+
+
+  #ifdef VCP_SERIAL
+  chnWrite(&SD2, (const uint8_t *)"Startup Passed\r\n", 17);
+  #endif
+
+  // enable power gating
+  palSetPad(GPIOA, GPIOA_EN_4V5_REG);
+  // enable pi comms
   sdStart(&LPSD1, NULL);
 
-  //adcStart(&ADCD1, NULL);
-
+  // enable threads
   //chThdCreateStatic(waThread1, sizeof(waThread1), NORMALPRIO, Thread1, NULL);
   chThdCreateStatic(waThread2, sizeof(waThread2), NORMALPRIO, Thread2, NULL);
 
+  uint32_t vdda_faults = 0;
+  uint32_t vsns_faults = 0;
 
+
+  // main thread, check for voltages and exit
   while (true) {
-    
-    palSetPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(1000);
-    palClearPad(GPIOB, GPIOB_LED_YELLOW);
-    chThdSleepMilliseconds(1000);
 
-    //enter_stop();
+    // convert voltages
+    #ifdef DEBUG
+    palSetPad(GPIOB, GPIOB_LED_YELLOW);
+    #endif    
+    adc_convert_grp1();
+    uint32_t vsns = adc_grp1_vsns();
+    uint32_t vdda = adc_grp1_vdda();
+
+    // VDDA fault
+    if (vdda <= VDDA_LOW_LIM - VDDA_HYST_LIM || vdda >= VDDA_HIGH_LIM + VDDA_HYST_LIM) {
+      vdda_faults++;
+      #ifdef VCP_SERIAL
+      VCP_PRINT("Flt VDDA\r\n");
+      #endif
+    }
+    else {
+      vdda_faults=0;
+    }
+
+    // VSNS fault
+    if (vsns <= VSNS_LOW_LIM - VSNS_HYST_LIM || vsns >= VSNS_HIGH_LIM + VSNS_HYST_LIM) {
+      vsns_faults++;
+      #ifdef VCP_SERIAL
+      VCP_PRINT("Flt VSNS\r\n");
+      #endif
+    }
+    else {
+      vsns_faults=0;
+    }
+    
+    // fault count exceeds threshold
+    if (vdda_faults >= VDDA_FAULT_THRES || vsns_faults >= VSNS_FAULT_THRES) {
+      palClearPad(GPIOA, GPIOA_EN_4V5_REG);
+      #ifdef VCP_SERIAL
+      VCP_PRINT("Stop Flt\r\n");
+      #endif
+      enter_stop();
+    }
+
+    palClearPad(GPIOB, GPIOB_LED_YELLOW);
+    chThdSleepMilliseconds(100);
   }
 }
